@@ -33,7 +33,7 @@ export default function OrbitBadge({
 
   return (
     <div
-      className={`absolute inset-0 flex items-center justify-center orbit-container ${className}`}
+      className={`absolute inset-0 flex items-center justify-center orbit-container overflow-hidden ${className}`}
       style={style}
     >
       <div className="orbit-badge flex items-center gap-2 px-4 py-2 bg-white/95 backdrop-blur-sm rounded-full shadow-lg border border-gray-200 text-gray-800 text-sm font-medium pointer-events-none">

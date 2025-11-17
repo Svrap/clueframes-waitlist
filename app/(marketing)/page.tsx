@@ -285,22 +285,22 @@ export default function MarketingPage() {
   }, [isExpanded, testimonials.length]);
 
   return (
-    <main className="relative min-h-screen flex flex-col items-center justify-center overflow-x-hidden overflow-y-auto bg-white pb-20 sm:pb-0">
+    <main className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-x-hidden overflow-y-auto bg-white pb-20 sm:pb-0">
       {/* Subtle Background Glow */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden w-full">
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-orange-100/30 rounded-full blur-[150px]" />
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-red-100/30 rounded-full blur-[120px]" />
       </div>
 
       {/* Subtle Orbit Rings - Hidden on mobile for better performance */}
-      <div className="hidden md:flex absolute inset-0 items-center justify-center pointer-events-none z-0">
-        <div className="orbit-ring w-[900px] h-[900px] border border-gray-200 opacity-60" />
-        <div className="orbit-ring w-[1100px] h-[1100px] border border-gray-200 opacity-50" />
-        <div className="orbit-ring w-[1300px] h-[1300px] border border-gray-200 opacity-40" />
+      <div className="hidden md:flex absolute inset-0 items-center justify-center pointer-events-none z-0 overflow-hidden w-full">
+        <div className="orbit-ring w-[900px] h-[900px] border border-gray-200 opacity-60 max-w-[90vw] max-h-[90vh]" />
+        <div className="orbit-ring w-[1100px] h-[1100px] border border-gray-200 opacity-50 max-w-[90vw] max-h-[90vh]" />
+        <div className="orbit-ring w-[1300px] h-[1300px] border border-gray-200 opacity-40 max-w-[90vw] max-h-[90vh]" />
       </div>
 
       {/* Subtle Glow Orbs - Hidden on mobile */}
-      <div className="hidden md:block">
+      <div className="hidden md:block absolute inset-0 overflow-hidden pointer-events-none w-full">
         <GlowOrb
           size="100px"
           color="rgba(249, 115, 22, 0.08)"
@@ -333,7 +333,7 @@ export default function MarketingPage() {
 
       {/* Orbit Badges - All equally spaced (72° apart) at same orbit distance - Hidden on mobile */}
       {/* 5 badges = 360° / 5 = 72° spacing between each */}
-      <div className="hidden md:block">
+      <div className="hidden md:block absolute inset-0 overflow-hidden pointer-events-none w-full">
         <OrbitBadge
           icon="🔍"
           delay={0}
@@ -382,7 +382,7 @@ export default function MarketingPage() {
       </div>
 
       {/* Central Hero Section */}
-      <div className={`relative z-30 max-w-2xl mx-auto px-4 sm:px-6 text-center transition-all duration-500 ${
+      <div className={`relative z-30 w-full max-w-2xl mx-auto px-4 sm:px-6 text-center transition-all duration-500 ${
         isExpanded 
           ? 'pt-8 pb-12 sm:pt-12 sm:pb-16' 
           : 'pt-12 pb-8 sm:pt-16 sm:pb-12 md:pt-20 md:pb-16'
@@ -440,7 +440,7 @@ export default function MarketingPage() {
           </div>
         ) : (
           /* Two Column Split Card - Clean Minimal Design */
-          <div ref={formCardRef} className="relative z-30 w-full max-w-[1750px] mx-auto rounded-xl sm:rounded-2xl overflow-hidden shadow-xl bg-white border border-gray-200 flex flex-col md:flex-row">
+          <div ref={formCardRef} className="relative z-30 w-full max-w-7xl mx-auto rounded-xl sm:rounded-2xl overflow-hidden shadow-xl bg-white border border-gray-200 flex flex-col md:flex-row">
             {/* Left Side - Gradient Panel with Rotating Testimonials (50%) */}
             <div className="w-full md:w-1/2 bg-gradient-to-br from-orange-500 via-red-500 to-red-600 flex flex-col justify-center text-white p-6 sm:p-8 md:p-12 lg:p-16 relative min-h-[300px] sm:min-h-[400px] md:min-h-0 overflow-hidden">
               {/* Content - Vertically Centered */}

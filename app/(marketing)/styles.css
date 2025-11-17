@@ -1,0 +1,153 @@
+/* Orbit Animation Container */
+.orbit-container {
+  /* Animation sets initial position via backwards fill mode */
+  /* This ensures badges are in orbit position immediately on load */
+  animation: orbitSlow var(--orbit-duration, 45s) linear infinite;
+  animation-delay: var(--delay, 0s);
+  animation-fill-mode: backwards; /* Apply 0% keyframe immediately before animation starts */
+  will-change: transform; /* Optimize for smooth animation */
+  backface-visibility: hidden; /* Prevent flickering */
+  transform-style: preserve-3d;
+  z-index: 1; /* Ensure badges are above rings but below hero */
+}
+
+/* Float Animation - applies to the badge inside the orbit container */
+.orbit-badge {
+  animation: float 4s ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* Float Animation - smoother, slower float */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+/* Orbit Rotation Animation - rotates continuously around circle */
+/* Smooth, slow rotation using ease-in-out for natural motion */
+@keyframes orbitSlow {
+  0% {
+    transform: rotate(var(--initial-angle, 0deg)) translateX(var(--orbit-distance, 120px)) rotate(calc(-1 * var(--initial-angle, 0deg)));
+  }
+  100% {
+    transform: rotate(calc(var(--initial-angle, 0deg) + 360deg)) translateX(var(--orbit-distance, 120px)) rotate(calc(-1 * var(--initial-angle, 0deg) - 360deg));
+  }
+}
+
+/* Glow Pulse Animation */
+@keyframes glowPulse {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.1);
+  }
+}
+
+/* Apply animations */
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-glow-pulse {
+  animation: glowPulse var(--glow-duration, 4s) ease-in-out infinite;
+  animation-delay: var(--glow-delay, 0s);
+}
+
+/* Orbit rings */
+.orbit-ring {
+  position: absolute;
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: orbitSlow 30s linear infinite;
+  z-index: 0;
+}
+
+.orbit-ring:nth-child(2) {
+  animation-delay: -10s;
+}
+
+.orbit-ring:nth-child(3) {
+  animation-delay: -20s;
+}
+
+/* Background gradient */
+.cosmic-bg {
+  background: radial-gradient(circle at center, #ffffff 0%, #f8f9fa 50%, #f0f0f0 100%);
+}
+
+/* Border glow effect */
+.border-glow {
+  box-shadow: 
+    0 0 40px rgba(139, 92, 246, 0.2),
+    0 0 80px rgba(236, 72, 153, 0.1),
+    inset 0 0 60px rgba(255, 255, 255, 0.1);
+}
+
+/* Workflow animation */
+@keyframes workflowCycle {
+  0%, 100% { opacity: 1; transform: translateY(0); }
+  25% { opacity: 0.3; transform: translateY(-10px); }
+  50% { opacity: 0.1; transform: translateY(-20px); }
+  75% { opacity: 0.3; transform: translateY(-10px); }
+}
+
+.workflow-item {
+  animation: workflowCycle 8s ease-in-out infinite;
+  opacity: 0;
+}
+
+.workflow-item:nth-child(1) { 
+  animation-delay: 0s; 
+  opacity: 1;
+}
+.workflow-item:nth-child(2) { 
+  animation-delay: 2s; 
+}
+.workflow-item:nth-child(3) { 
+  animation-delay: 4s; 
+}
+.workflow-item:nth-child(4) { 
+  animation-delay: 6s; 
+}
+
+/* Testimonial Animation */
+@keyframes fadeInSlide {
+  0% {
+    opacity: 0;
+    transform: translateX(15px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeOutSlide {
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-15px);
+  }
+}
+
+.testimonial-enter {
+  animation: fadeInSlide 0.6s ease-out forwards;
+}
+
+.testimonial-exit {
+  animation: fadeOutSlide 0.4s ease-in forwards;
+}
+

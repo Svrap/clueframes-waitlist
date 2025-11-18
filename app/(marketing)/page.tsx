@@ -214,6 +214,21 @@ export default function MarketingPage() {
       const result = await response.json();
 
       if (result.success) {
+        // Send welcome email after successful waitlist submission
+        try {
+          await fetch("/api/email", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ email: sanitizedEmail }),
+          });
+          // Email sending is non-blocking - we don't show error if it fails
+        } catch (emailErr) {
+          // Silently handle email errors - user is already on waitlist
+          console.error("Email sending error:", emailErr);
+        }
+
         setSuccess(true);
         setEmail("");
         setName("");

@@ -4,12 +4,6 @@ import { createClient } from "@supabase/supabase-js";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Initialize Supabase client with service role key for server-side operations
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
 // Styled HTML email template
 const getEmailHTML = () => {
   return `
@@ -79,6 +73,7 @@ const getEmailHTML = () => {
 export async function POST(request: NextRequest) {
   let emailSent = false;
   let loggedToSupabase = false;
+  let errorDetails: any = {};
 
   try {
     // Check if required environment variables are configured
@@ -90,13 +85,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    // Check Supabase env vars - try both naming conventions
+    const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !supabaseServiceKey) {
       console.error("Supabase environment variables are not configured");
+      console.error("SUPABASE_URL:", !!process.env.SUPABASE_URL, "NEXT_PUBLIC_SUPABASE_URL:", !!process.env.NEXT_PUBLIC_SUPABASE_URL);
+      console.error("SUPABASE_SERVICE_ROLE_KEY:", !!supabaseServiceKey);
       return NextResponse.json(
         { success: false, message: "Database service is not configured" },
         { status: 500 }
       );
     }
+
+    // Reinitialize Supabase client with correct env vars
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Parse request body
     const body = await request.json();
@@ -131,57 +135,89 @@ export async function POST(request: NextRequest) {
       });
 
       if (error) {
-        console.error("Resend error:", error);
+        console.error("Resend error:", JSON.stringify(error, null, 2));
+        errorDetails.resendError = error;
         // Continue to Supabase logging even if email fails
       } else {
         emailSent = true;
+        console.log("Email sent successfully to:", trimmedEmail);
       }
-    } catch (emailError) {
-      console.error("Email sending error:", emailError);
+    } catch (emailError: any) {
+      console.error("Email sending exception:", emailError);
+      errorDetails.emailException = emailError?.message || String(emailError);
       // Continue to Supabase logging even if email fails
     }
 
     // Step 2: Log to Supabase
     try {
-      const { error: supabaseError } = await supabase
+      const { data: insertData, error: supabaseError } = await supabase
         .from("waitlist_users")
-        .insert([{ email: trimmedEmail, source: "waitlist" }]);
+        .insert([{ email: trimmedEmail, source: "waitlist" }])
+        .select();
 
       if (supabaseError) {
+        console.error("Supabase insert error:", JSON.stringify(supabaseError, null, 2));
+        console.error("Error code:", supabaseError.code);
+        console.error("Error message:", supabaseError.message);
+        console.error("Error details:", supabaseError.details);
+        console.error("Error hint:", supabaseError.hint);
+        
+        errorDetails.supabaseError = {
+          code: supabaseError.code,
+          message: supabaseError.message,
+          details: supabaseError.details,
+          hint: supabaseError.hint,
+        };
+
         // Check if it's a duplicate key error (email already exists)
         if (
           supabaseError.code === "23505" ||
+          supabaseError.code === "PGRST116" ||
           supabaseError.message?.includes("duplicate") ||
-          supabaseError.message?.includes("unique")
+          supabaseError.message?.includes("unique") ||
+          supabaseError.message?.includes("already exists")
         ) {
           // Email already exists, skip silently
           loggedToSupabase = false;
+          console.log("Email already exists in waitlist_users, skipping insert");
         } else {
-          console.error("Supabase error:", supabaseError);
-          // Continue execution even if Supabase insert fails
+          // Other error - log it but continue
+          console.error("Supabase insert failed with non-duplicate error");
         }
       } else {
         loggedToSupabase = true;
+        console.log("Successfully logged to Supabase:", insertData);
       }
-    } catch (supabaseError) {
-      console.error("Supabase insertion error:", supabaseError);
+    } catch (supabaseError: any) {
+      console.error("Supabase insertion exception:", supabaseError);
+      errorDetails.supabaseException = supabaseError?.message || String(supabaseError);
       // Continue execution even if Supabase insert fails
     }
 
     // Return success response with status flags
-    return NextResponse.json({
+    // Include error details in development for debugging
+    const response: any = {
       success: true,
       emailSent: emailSent,
       loggedToSupabase: loggedToSupabase,
-    });
-  } catch (error) {
+    };
+
+    // Include error details in development mode for debugging
+    if (process.env.NODE_ENV === "development" && Object.keys(errorDetails).length > 0) {
+      response.errorDetails = errorDetails;
+    }
+
+    return NextResponse.json(response);
+  } catch (error: any) {
     console.error("API error:", error);
+    console.error("Error stack:", error?.stack);
     return NextResponse.json(
       {
         success: false,
         message: "An unexpected error occurred. Please try again.",
         emailSent: emailSent,
         loggedToSupabase: loggedToSupabase,
+        ...(process.env.NODE_ENV === "development" && { error: error?.message }),
       },
       { status: 500 }
     );

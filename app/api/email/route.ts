@@ -40,7 +40,7 @@ const getEmailHTML = () => {
               </p>
               
               <p style="margin: 0 0 20px 0; font-size: 16px; line-height: 1.7; color: #e5e5e5;">
-                ClueFrames is an AI-powered pre-production studio designed specifically for video creators like you. We help you turn your ideas into polished scripts and storyboards in minutes, not days—cutting your pre-production time by 70–90%.
+                ClueFrames is an AI-powered pre-production studio designed specifically for video creators like you. We help you turn your ideas into polished scripts and storyboards in minutes, not days. cutting your pre-production time by 70–90%.
               </p>
               
               <p style="margin: 0 0 30px 0; font-size: 16px; line-height: 1.7; color: #e5e5e5;">
@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
     // Step 1: Send email via Resend
     try {
       const { data, error } = await resend.emails.send({
-        from: "ClueFrames <hello@clueframes.com>",
+        from: "ClueFrames <no-reply@clueframes.com>",
         to: trimmedEmail,
         subject: "🎬 Welcome to ClueFrames Beta!",
         html: getEmailHTML(),

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import OrbitBadge from "@/components/ui/OrbitBadge";
 import GlowOrb from "@/components/ui/GlowOrb";
 import Input from "@/components/ui/Input";
@@ -402,7 +403,7 @@ export default function MarketingPage() {
           ? 'pt-8 pb-12 sm:pt-12 sm:pb-16' 
           : 'pt-12 pb-8 sm:pt-16 sm:pb-12 md:pt-20 md:pb-16'
       }`}>
-        {/* Logo placeholder - Hide when form expanded */}
+        {/* Logo - Center aligned */}
         {!isExpanded && (
           <div className="mb-4 sm:mb-6 animate-in fade-in duration-500">
             <div className="text-lg sm:text-xl font-semibold text-gray-900 tracking-tight">ClueFrames</div>
@@ -440,6 +441,15 @@ export default function MarketingPage() {
         ) : !isExpanded ? (
           /* Email Input - Initial State - Clean Minimal */
           <div className="max-w-md mx-auto w-full">
+            {/* About Button - Above email input */}
+            <div className="mb-4 flex justify-center">
+              <Link
+                href="/about"
+                className="text-sm sm:text-base font-medium text-white bg-gradient-to-r from-orange-500 via-red-500 to-red-600 hover:from-orange-600 hover:via-red-600 hover:to-red-700 transition-all duration-200 px-6 py-2.5 rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
+              >
+                About
+              </Link>
+            </div>
             <input
               type="email"
               placeholder="Enter your email -> Join the beta list"

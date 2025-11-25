@@ -628,6 +628,30 @@ export default function MarketingPage() {
           )}
       </div>
 
+      <section className="text-center mt-16">
+        <h2 className="text-2xl font-semibold text-white mb-4">
+          🎬 Try the Interactive Demo
+        </h2>
+        <button
+          onClick={() => {
+            const iframe = document.getElementById("clueframes-demo");
+            iframe?.scrollIntoView({ behavior: "smooth" });
+          }}
+          className="bg-orange-500 text-white px-6 py-3 rounded-lg hover:bg-orange-600 transition"
+        >
+          View Demo
+        </button>
+
+        <div id="clueframes-demo" className="mt-10 rounded-xl overflow-hidden">
+          <iframe
+            src="https://app.usehexus.com/embed/7cea5536-8fc5-43ab-9db5-1391a172df9f"
+            frameBorder="0"
+            allowFullScreen
+            className="w-full h-[600px] rounded-xl"
+          ></iframe>
+        </div>
+      </section>
+
         {/* Footer */}
         <footer className="absolute bottom-0 left-0 right-0 text-center py-4 sm:py-6 md:py-8 text-xs sm:text-sm text-gray-400 px-4">
           <p>ClueFrames © 2025 — Built for creators.</p>

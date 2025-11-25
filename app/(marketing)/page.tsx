@@ -22,6 +22,7 @@ export default function MarketingPage() {
   const formCardRef = useRef<HTMLDivElement>(null);
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [showDemo, setShowDemo] = useState(false);
 
   const testimonials = [
     "Research takes me longer than recording. Anything that cuts that down is a blessing.",
@@ -300,6 +301,18 @@ export default function MarketingPage() {
     return () => clearInterval(interval);
   }, [isExpanded, testimonials.length]);
 
+  // Prevent body scroll when demo modal is open
+  useEffect(() => {
+    if (showDemo) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showDemo]);
+
   return (
     <main className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-x-hidden overflow-y-auto bg-white pb-20 sm:pb-0">
       {/* Subtle Background Glow */}
@@ -441,14 +454,20 @@ export default function MarketingPage() {
         ) : !isExpanded ? (
           /* Email Input - Initial State - Clean Minimal */
           <div className="max-w-md mx-auto w-full">
-            {/* About Button - Above email input */}
-            <div className="mb-4 flex justify-center">
+            {/* About and View Demo Buttons - Above email input */}
+            <div className="mb-4 flex justify-center gap-3">
               <Link
                 href="/about"
                 className="text-sm sm:text-base font-medium text-white bg-gradient-to-r from-orange-500 via-red-500 to-red-600 hover:from-orange-600 hover:via-red-600 hover:to-red-700 transition-all duration-200 px-6 py-2.5 rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
               >
                 About
               </Link>
+              <button
+                onClick={() => setShowDemo(true)}
+                className="text-sm sm:text-base font-medium text-white bg-gradient-to-r from-orange-500 via-red-500 to-red-600 hover:from-orange-600 hover:via-red-600 hover:to-red-700 transition-all duration-200 px-6 py-2.5 rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
+              >
+                View Demo
+              </button>
             </div>
             <input
               type="email"
@@ -628,29 +647,55 @@ export default function MarketingPage() {
           )}
       </div>
 
-      <section className="text-center mt-16">
-        <h2 className="text-2xl font-semibold text-white mb-4">
-          🎬 Try the Interactive Demo
-        </h2>
-        <button
-          onClick={() => {
-            const iframe = document.getElementById("clueframes-demo");
-            iframe?.scrollIntoView({ behavior: "smooth" });
+      {/* Demo Modal Overlay */}
+      {showDemo && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowDemo(false);
+            }
           }}
-          className="bg-orange-500 text-white px-6 py-3 rounded-lg hover:bg-orange-600 transition"
         >
-          View Demo
-        </button>
-
-        <div id="clueframes-demo" className="mt-10 rounded-xl overflow-hidden">
-          <iframe
-            src="https://app.usehexus.com/embed/7cea5536-8fc5-43ab-9db5-1391a172df9f"
-            frameBorder="0"
-            allowFullScreen
-            className="w-full h-[600px] rounded-xl"
-          ></iframe>
+          <div className="relative w-full h-full max-w-7xl max-h-[90vh] m-4 flex flex-col bg-white rounded-xl overflow-hidden shadow-2xl">
+            {/* Close Button */}
+            <div className="flex justify-between items-center p-4 bg-gray-50 border-b border-gray-200">
+              <h2 className="text-xl font-semibold text-gray-900">
+                🎬 Interactive Demo
+              </h2>
+              <button
+                onClick={() => setShowDemo(false)}
+                className="text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-full p-2 transition-all duration-200"
+                aria-label="Close demo"
+              >
+                <svg 
+                  className="w-6 h-6" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M6 18L18 6M6 6l12 12" 
+                  />
+                </svg>
+              </button>
+            </div>
+            
+            {/* Iframe Container */}
+            <div className="flex-1 overflow-hidden">
+              <iframe
+                src="https://app.usehexus.com/embed/7cea5536-8fc5-43ab-9db5-1391a172df9f"
+                frameBorder="0"
+                allowFullScreen
+                className="w-full h-full"
+              ></iframe>
+            </div>
+          </div>
         </div>
-      </section>
+      )}
 
         {/* Footer */}
         <footer className="absolute bottom-0 left-0 right-0 text-center py-4 sm:py-6 md:py-8 text-xs sm:text-sm text-gray-400 px-4">

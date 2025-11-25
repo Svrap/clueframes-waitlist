@@ -41,7 +41,7 @@ export default function AboutPage() {
           </p>
           
           <p className="text-lg sm:text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed mb-12">
-            ClueFrames helps creators and content teams automate the slowest part of production — the pre-production process — so they can focus on storytelling, not spreadsheets.
+            ClueFrames helps creators and content teams automate the slowest part of production,the pre-production process so they can focus on storytelling, not spreadsheets.
           </p>
 
           {/* Stats Grid */}
@@ -402,7 +402,7 @@ export default function AboutPage() {
                 Why ClueFrames Exists
               </h2>
               <p className="text-xl sm:text-2xl text-gray-300 leading-relaxed mb-12 max-w-3xl mx-auto">
-                Every great video starts with chaos — scattered ideas, research notes, and half-finished scripts. ClueFrames brings structure and speed to that chaos.
+                Every great video starts with chaos scattered ideas, research notes, and half-finished scripts. ClueFrames brings structure and speed to that chaos.
               </p>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

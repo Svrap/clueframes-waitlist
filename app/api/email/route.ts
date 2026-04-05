@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { createClient } from "@supabase/supabase-js";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 // Styled HTML email template
 const getEmailHTML = () => {
   return `
@@ -126,6 +124,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Step 1: Send email via Resend
+    const resend = new Resend(process.env.RESEND_API_KEY);
     try {
       const { data, error } = await resend.emails.send({
         from: "ClueFrames <no-reply@clueframes.com>",

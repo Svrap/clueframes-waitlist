@@ -1,12 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-// Server-side Supabase client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
 // Validation functions
 function validateEmail(email: string): { valid: boolean; message?: string } {
   if (!email || typeof email !== "string") {
@@ -57,9 +51,16 @@ function validateEmail(email: string): { valid: boolean; message?: string } {
   return { valid: true };
 }
 
-function validateURL(url: string): { valid: boolean; message?: string } {
+function normalizeChannelUrl(input: string): string {
+  const trimmed = input.trim();
+  if (!trimmed) return trimmed;
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
+}
+
+function validateChannelUrl(url: string): { valid: boolean; message?: string } {
   if (!url || typeof url !== "string" || url.trim() === "") {
-    return { valid: true }; // URL is optional
+    return { valid: false, message: "YouTube channel URL is required" };
   }
 
   const trimmedUrl = url.trim();
@@ -67,9 +68,10 @@ function validateURL(url: string): { valid: boolean; message?: string } {
     return { valid: false, message: "URL is too long" };
   }
 
+  const toCheck = normalizeChannelUrl(trimmedUrl);
   try {
-    const urlObj = new URL(trimmedUrl);
-    if (!['http:', 'https:'].includes(urlObj.protocol)) {
+    const urlObj = new URL(toCheck);
+    if (!["http:", "https:"].includes(urlObj.protocol)) {
       return { valid: false, message: "URL must use http or https protocol" };
     }
     if (!urlObj.hostname || urlObj.hostname.length === 0) {
@@ -77,13 +79,13 @@ function validateURL(url: string): { valid: boolean; message?: string } {
     }
     return { valid: true };
   } catch {
-    return { valid: false, message: "Please enter a valid URL" };
+    return { valid: false, message: "Please enter a valid channel URL" };
   }
 }
 
 function validateName(name: string): { valid: boolean; message?: string } {
   if (!name || typeof name !== "string" || name.trim() === "") {
-    return { valid: true }; // Name is optional
+    return { valid: false, message: "Name is required" };
   }
 
   const trimmedName = name.trim();
@@ -112,15 +114,22 @@ function sanitizeInput(input: string | null | undefined, maxLength: number = 100
 
 export async function POST(request: NextRequest) {
   try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.error("Supabase env not configured");
+      return NextResponse.json(
+        { success: false, message: "Something went wrong. Please try again." },
+        { status: 500 }
+      );
+    }
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
     const body = await request.json();
     
-    // Extract and sanitize all inputs
     const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
     const name = sanitizeInput(body.name, 100);
     const channel_url = sanitizeInput(body.channel_url, 2048);
-    const category = sanitizeInput(body.category, 50);
-    const biggest_pain = sanitizeInput(body.biggest_pain, 500);
-    const source = sanitizeInput(body.source, 100) || "landing-page";
 
     // Validate email (required)
     const emailValidation = validateEmail(email);
@@ -131,40 +140,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate name if provided
-    if (name) {
-      const nameValidation = validateName(name);
-      if (!nameValidation.valid) {
-        return NextResponse.json(
-          { success: false, message: nameValidation.message || "Invalid name" },
-          { status: 400 }
-        );
-      }
-    }
-
-    // Validate URL if provided
-    if (channel_url) {
-      const urlValidation = validateURL(channel_url);
-      if (!urlValidation.valid) {
-        return NextResponse.json(
-          { success: false, message: urlValidation.message || "Invalid URL" },
-          { status: 400 }
-        );
-      }
-    }
-
-    // Validate category if provided
-    const allowedCategories = ['Tech', 'Education', 'Commentary', 'Documentary', 'Finance', 'Gaming', 'Lifestyle', 'Others'];
-    if (category && !allowedCategories.includes(category)) {
+    const nameValidation = validateName(name || "");
+    if (!nameValidation.valid) {
       return NextResponse.json(
-        { success: false, message: "Invalid category selected" },
+        { success: false, message: nameValidation.message || "Invalid name" },
         { status: 400 }
       );
     }
 
+    const urlValidation = validateChannelUrl(channel_url || "");
+    if (!urlValidation.valid) {
+      return NextResponse.json(
+        { success: false, message: urlValidation.message || "Invalid URL" },
+        { status: 400 }
+      );
+    }
+
+    const sanitizedName = name as string;
+    const normalizedChannelUrl = normalizeChannelUrl(channel_url as string);
+
     // Check for duplicate email
     const { data: existing } = await supabase
-      .from("waitlist_leads")
+      .from("waitlist_signups")
       .select("email")
       .eq("email", email)
       .limit(1);
@@ -174,14 +171,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
-    // Insert into waitlist_leads table
-    const { error } = await supabase.from("waitlist_leads").insert({
-      name: name,
+    const { error } = await supabase.from("waitlist_signups").insert({
+      name: sanitizedName,
       email: email,
-      channel_url: channel_url,
-      category: category,
-      biggest_pain: biggest_pain,
-      source: source,
+      channel_url: normalizedChannelUrl,
+      created_at: new Date().toISOString(),
     });
 
     if (error) {
@@ -192,7 +186,7 @@ export async function POST(request: NextRequest) {
       
       console.error("Supabase error:", error);
       return NextResponse.json(
-        { success: false, message: "Failed to join waitlist. Please try again." },
+        { success: false, message: "Something went wrong. Please try again." },
         { status: 500 }
       );
     }
@@ -201,7 +195,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("API error:", error);
     return NextResponse.json(
-      { success: false, message: "An unexpected error occurred. Please try again." },
+      { success: false, message: "Something went wrong. Please try again." },
       { status: 500 }
     );
   }

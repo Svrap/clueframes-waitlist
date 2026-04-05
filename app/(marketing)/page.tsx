@@ -1,207 +1,29 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import OrbitBadge from "@/components/ui/OrbitBadge";
 import GlowOrb from "@/components/ui/GlowOrb";
-import Input from "@/components/ui/Input";
-import Button from "@/components/ui/Button";
 import "./styles.css";
 
 export default function MarketingPage() {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [channelUrl, setChannelUrl] = useState("");
-  const [category, setCategory] = useState("");
-  const [biggestPain, setBiggestPain] = useState("");
-  const [source, setSource] = useState("");
-  const [isExpanded, setIsExpanded] = useState(false);
   const [success, setSuccess] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const formCardRef = useRef<HTMLDivElement>(null);
-  const [currentTestimonial, setCurrentTestimonial] = useState(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
   const [showDemo, setShowDemo] = useState(false);
-
-  const testimonials = [
-    "Research takes me longer than recording. Anything that cuts that down is a blessing.",
-    "Half my time goes into finding the right info… not making the actual video.",
-    "Scriptwriting drains me. If this saves even 30 minutes, I'm in.",
-    "I've got ideas, but organizing them into a video plan takes forever.",
-    "Pre-production is my bottleneck. I'd rather spend that time filming.",
-    "If this tool speeds up planning, I'll finally be able to post consistently."
-  ];
-
-  const handleEmailFocus = () => {
-    setIsExpanded(true);
-  };
-
-  // Enhanced Validation functions
-  const validateEmail = (email: string): boolean => {
-    if (!email || email.trim() === "") {
-      return false;
-    }
-    const trimmedEmail = email.trim().toLowerCase();
-    
-    // Basic length check
-    if (trimmedEmail.length < 3 || trimmedEmail.length > 254) {
-      return false;
-    }
-    
-    // RFC 5322 compliant email regex (simplified but robust)
-    const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-    
-    if (!emailRegex.test(trimmedEmail)) {
-      return false;
-    }
-    
-    // Check for common invalid patterns
-    if (trimmedEmail.startsWith('.') || trimmedEmail.startsWith('@') || trimmedEmail.endsWith('@')) {
-      return false;
-    }
-    
-    // Check for consecutive dots
-    if (trimmedEmail.includes('..')) {
-      return false;
-    }
-    
-    // Check domain has at least one dot after @
-    const parts = trimmedEmail.split('@');
-    if (parts.length !== 2 || !parts[1].includes('.')) {
-      return false;
-    }
-    
-    // Check domain extension
-    const domainParts = parts[1].split('.');
-    if (domainParts.length < 2 || domainParts[domainParts.length - 1].length < 2) {
-      return false;
-    }
-    
-    return true;
-  };
-
-  const validateURL = (url: string): boolean => {
-    if (!url || url.trim() === "") {
-      return true; // URL is optional, empty is valid
-    }
-    const trimmedUrl = url.trim();
-    
-    // Length check
-    if (trimmedUrl.length > 2048) {
-      return false;
-    }
-    
-    try {
-      const urlObj = new URL(trimmedUrl);
-      // Only allow http and https protocols
-      if (!['http:', 'https:'].includes(urlObj.protocol)) {
-        return false;
-      }
-      // Check for valid domain
-      if (!urlObj.hostname || urlObj.hostname.length === 0) {
-        return false;
-      }
-      return true;
-    } catch {
-      return false;
-    }
-  };
-
-  const validateName = (name: string): boolean => {
-    if (!name || name.trim() === "") {
-      return true; // Name is optional, empty is valid
-    }
-    const trimmedName = name.trim();
-    
-    // Length check
-    if (trimmedName.length < 2 || trimmedName.length > 100) {
-      return false;
-    }
-    
-    // Name should only contain letters, spaces, hyphens, apostrophes, and periods
-    const nameRegex = /^[a-zA-Z\s'.-]{2,100}$/;
-    if (!nameRegex.test(trimmedName)) {
-      return false;
-    }
-    
-    // No consecutive special characters
-    if (trimmedName.includes('  ') || trimmedName.includes('--') || trimmedName.includes("''")) {
-      return false;
-    }
-    
-    return true;
-  };
-
-  const sanitizeInput = (input: string, maxLength: number = 1000): string => {
-    if (!input) return "";
-    return input.trim().slice(0, maxLength);
-  };
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setPending(true);
     setError(null);
 
-    // Validate email
-    if (!validateEmail(email)) {
-      setError("Please enter a valid email address.");
-      setPending(false);
-      return;
-    }
-
-    // Validate name if provided
-    if (name && name.trim() !== "" && !validateName(name)) {
-      setError("Please enter a valid name (2-100 characters, letters and spaces only).");
-      setPending(false);
-      return;
-    }
-
-    // Validate channel URL if provided
-    if (channelUrl && channelUrl.trim() !== "" && !validateURL(channelUrl)) {
-      setError("Please enter a valid channel URL (e.g., https://youtube.com/@channelName).");
-      setPending(false);
-      return;
-    }
-
-    // Validate biggest pain point length if provided
-    if (biggestPain && biggestPain.trim().length > 500) {
-      setError("Pain point description should be less than 500 characters.");
-      setPending(false);
-      return;
-    }
-
-    // Validate source length if provided
-    if (source && source.trim().length > 100) {
-      setError("Source should be less than 100 characters.");
-      setPending(false);
-      return;
-    }
-
-    // Sanitize all inputs
-    const sanitizedName = sanitizeInput(name, 100);
-    const sanitizedEmail = email.trim().toLowerCase();
-    const sanitizedChannelUrl = sanitizeInput(channelUrl, 2048);
-    const sanitizedCategory = category || null;
-    const sanitizedBiggestPain = sanitizeInput(biggestPain, 500);
-    const sanitizedSource = sanitizeInput(source, 100) || "landing-page";
-
-    // Additional email validation - check for disposable emails (basic check)
-    const disposableEmailDomains = ['tempmail.com', 'throwaway.email', 'mailinator.com'];
-    const emailDomain = sanitizedEmail.split('@')[1]?.toLowerCase();
-    if (emailDomain && disposableEmailDomains.some(domain => emailDomain.includes(domain))) {
-      setError("Please use a valid email address.");
-      setPending(false);
-      return;
-    }
-
     const payload = {
-      name: sanitizedName || null,
-      email: sanitizedEmail,
-      channel_url: sanitizedChannelUrl || null,
-      category: sanitizedCategory,
-      biggest_pain: sanitizedBiggestPain || null,
-      source: sanitizedSource,
+      name: name.trim(),
+      email: email.trim().toLowerCase(),
+      channel_url: channelUrl.trim(),
     };
 
     try {
@@ -216,100 +38,28 @@ export default function MarketingPage() {
       const result = await response.json();
 
       if (result.success) {
-        // Send welcome email after successful waitlist submission
-        try {
-          await fetch("/api/email", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ email: sanitizedEmail }),
-          });
-          // Email sending is non-blocking - we don't show error if it fails
-        } catch (emailErr) {
-          // Silently handle email errors - user is already on waitlist
-          console.error("Email sending error:", emailErr);
-        }
-
         setSuccess(true);
         setEmail("");
         setName("");
         setChannelUrl("");
-        setCategory("");
-        setBiggestPain("");
-        setSource("");
-        setIsExpanded(false);
-    } else {
-        setError(result.message || "Something went wrong. Please try again.");
+      } else {
+        setError("Something went wrong. Please try again.");
       }
-    } catch (err) {
-      setError("An unexpected error occurred. Please try again.");
+    } catch {
+      setError("Something went wrong. Please try again.");
     } finally {
       setPending(false);
     }
   }
 
-  // Calculate dot positions for smooth sliding animation
-  // gap-2 = 0.5rem = 8px, dot size = 1.5 = 6px, indicator width = 32px (w-8)
-  // Position: index * (dotWidth + gap) + (dotSize - indicatorWidth) / 2
-  const getIndicatorPosition = (index: number) => {
-    const dotSize = 6; // 1.5 * 4 = 6px
-    const gap = 8; // 0.5rem = 8px (gap-2)
-    const indicatorWidth = 32; // w-8 = 32px
-    return index * (dotSize + gap) + (dotSize - indicatorWidth) / 2;
-  };
-
-  // Handle click outside form card to close it
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (isExpanded && formCardRef.current && !formCardRef.current.contains(event.target as Node)) {
-        setIsExpanded(false);
-        // Reset form state when closing
-        setEmail("");
-        setName("");
-        setCategory("");
-        setBiggestPain("");
-        setSource("");
-        setError(null);
-      }
-    };
-
-    if (isExpanded) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isExpanded]);
-
-  // Rotate testimonials sequentially when form is expanded
-  useEffect(() => {
-    if (!isExpanded) return;
-
-    const interval = setInterval(() => {
-      // Start fade-out animation
-      setIsTransitioning(true);
-      
-      // After fade-out completes, change to next testimonial and fade-in
-      setTimeout(() => {
-        setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
-        setIsTransitioning(false);
-      }, 400); // Half of fade-out duration for smooth transition
-    }, 6000); // Change every 6 seconds (5.6s display + 0.4s transition)
-
-    return () => clearInterval(interval);
-  }, [isExpanded, testimonials.length]);
-
-  // Prevent body scroll when demo modal is open
   useEffect(() => {
     if (showDemo) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     }
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     };
   }, [showDemo]);
 
@@ -361,7 +111,6 @@ export default function MarketingPage() {
       </div>
 
       {/* Orbit Badges - All equally spaced (72° apart) at same orbit distance - Hidden on mobile */}
-      {/* 5 badges = 360° / 5 = 72° spacing between each */}
       <div className="hidden md:block absolute inset-0 overflow-hidden pointer-events-none w-full">
         <OrbitBadge
           icon="🔍"
@@ -411,245 +160,115 @@ export default function MarketingPage() {
       </div>
 
       {/* Central Hero Section */}
-      <div className={`relative z-30 w-full max-w-2xl mx-auto px-4 sm:px-6 text-center transition-all duration-500 ${
-        isExpanded 
-          ? 'pt-8 pb-12 sm:pt-12 sm:pb-16' 
-          : 'pt-12 pb-8 sm:pt-16 sm:pb-12 md:pt-20 md:pb-16'
-      }`}>
-        {/* Logo - Center aligned */}
-        {!isExpanded && (
-          <div className="mb-4 sm:mb-6 animate-in fade-in duration-500">
-            <div className="text-lg sm:text-xl font-semibold text-gray-900 tracking-tight">ClueFrames</div>
-          </div>
-        )}
+      <div className="relative z-30 w-full max-w-2xl mx-auto px-4 sm:px-6 text-center transition-all duration-500 pt-12 pb-8 sm:pt-16 sm:pb-12 md:pt-20 md:pb-16">
+        <div className="mb-4 sm:mb-6 animate-in fade-in duration-500">
+          <div className="text-lg sm:text-xl font-semibold text-gray-900 tracking-tight">ClueFrames</div>
+        </div>
 
-        {/* Main Heading - Hide when form expanded */}
-        {!isExpanded && (
-          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 leading-tight tracking-tight animate-in fade-in duration-500 delay-100">
-            Turn Ideas Into{" "}<br />
-            <span className="bg-gradient-to-r from-orange-500 via-red-500 to-red-600 bg-clip-text text-transparent">
-              Scripts & Storyboards
-            </span>
-            <br />
-            <span className="text-gray-900">In Minutes, Not Days.</span>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 leading-tight tracking-tight animate-in fade-in duration-500 delay-100">
+          Your next YouTube video {" "}
+          <br />
+          <span className="bg-gradient-to-r from-orange-500 via-red-500 to-red-600 bg-clip-text text-transparent">
+            researched, scripted, and storyboarded
+          </span>
+          <br />
+          <span className="text-gray-900">in 15 minutes.</span>
         </h1>
-        )}
 
-        {/* Sub-headline - Hide when form expanded */}
-        {!isExpanded && (
-          <p className="text-sm sm:text-base md:text-lg text-gray-600 mb-6 sm:mb-8 max-w-xl mx-auto leading-relaxed animate-in fade-in duration-500 delay-200 px-2">
-            Creators spend hours researching and scripting videos.{" "}
-            <br className="hidden sm:block" />
-            ClueFrames cuts pre-production time by 70–90% with practical AI workflows.
-          </p>
-        )}
+        <p className="text-sm sm:text-base md:text-lg text-gray-600 mb-6 sm:mb-8 max-w-xl mx-auto leading-relaxed animate-in fade-in duration-500 delay-200 px-2">
+          ClueFrames learns your exact voice and style. Then handles your entire pre-production Tier-1
+          research, script in your tone, storyboard with runtime automatically.
+        </p>
 
-        {/* Waitlist Form - Two Column Split Card Layout */}
+        <div className="mb-4 flex justify-center gap-3">
+          <Link
+            href="/about"
+            className="text-sm sm:text-base font-medium text-white bg-gradient-to-r from-orange-500 via-red-500 to-red-600 hover:from-orange-600 hover:via-red-600 hover:to-red-700 transition-all duration-200 px-6 py-2.5 rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
+          >
+            About
+          </Link>
+          <button
+            type="button"
+            onClick={() => setShowDemo(true)}
+            className="text-sm sm:text-base font-medium text-white bg-gradient-to-r from-orange-500 via-red-500 to-red-600 hover:from-orange-600 hover:via-red-600 hover:to-red-700 transition-all duration-200 px-6 py-2.5 rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
+          >
+            View Demo
+          </button>
+        </div>
+
         {success ? (
           <div className="relative z-30 w-full max-w-4xl mx-auto rounded-xl sm:rounded-2xl overflow-hidden shadow-lg bg-white border border-gray-200 p-6 sm:p-8 md:p-10">
             <p className="text-green-600 text-base sm:text-lg font-medium text-center">
-              You're in! 🚀 We'll email you soon.
+              You&apos;re in! We&apos;ll be in touch personally.
             </p>
           </div>
-        ) : !isExpanded ? (
-          /* Email Input - Initial State - Clean Minimal */
-          <div className="max-w-md mx-auto w-full">
-            {/* About and View Demo Buttons - Above email input */}
-            <div className="mb-4 flex justify-center gap-3">
-              <Link
-                href="/about"
-                className="text-sm sm:text-base font-medium text-white bg-gradient-to-r from-orange-500 via-red-500 to-red-600 hover:from-orange-600 hover:via-red-600 hover:to-red-700 transition-all duration-200 px-6 py-2.5 rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
-              >
-                About
-              </Link>
-              <button
-                onClick={() => setShowDemo(true)}
-                className="text-sm sm:text-base font-medium text-white bg-gradient-to-r from-orange-500 via-red-500 to-red-600 hover:from-orange-600 hover:via-red-600 hover:to-red-700 transition-all duration-200 px-6 py-2.5 rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
-              >
-                View Demo
-              </button>
-            </div>
-            <input
-              type="email"
-              placeholder="Enter your email -> Join the beta list"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onFocus={handleEmailFocus}
-              required
-              autoComplete="email"
-              maxLength={254}
-              pattern="[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*"
-              className="w-full px-4 sm:px-5 py-3 sm:py-3.5 rounded-lg border border-gray-300 bg-white text-gray-900 text-base placeholder-gray-400 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 shadow-sm transition-all duration-200"
-            />
-          </div>
         ) : (
-          /* Two Column Split Card - Clean Minimal Design */
-          <div ref={formCardRef} className="relative z-30 w-full max-w-7xl mx-auto rounded-xl sm:rounded-2xl overflow-hidden shadow-xl bg-white border border-gray-200 flex flex-col md:flex-row">
-            {/* Left Side - Gradient Panel with Rotating Testimonials (50%) */}
-            <div className="w-full md:w-1/2 bg-gradient-to-br from-orange-500 via-red-500 to-red-600 flex flex-col justify-center text-white p-6 sm:p-8 md:p-12 lg:p-16 relative min-h-[300px] sm:min-h-[400px] md:min-h-0 overflow-hidden">
-              {/* Content - Vertically Centered */}
-              <div className="max-w-lg mx-auto md:mx-0 md:max-w-md relative h-full flex items-center">
-                {/* Rotating Testimonial */}
-                <div className="relative w-full min-h-[200px] sm:min-h-[250px] md:min-h-[280px]">
-                  <div
-                    key={currentTestimonial}
-                    className={isTransitioning ? "testimonial-exit" : "testimonial-enter"}
-                  >
-                    <div className="flex items-start gap-2 sm:gap-3 mb-4 sm:mb-6">
-                      <svg className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-white/90 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.996 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.984zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
-                      </svg>
-                    </div>
-                    <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-medium leading-relaxed text-white mb-6 sm:mb-8">
-                      "{testimonials[currentTestimonial]}"
-                    </p>
-                    <div className="flex items-center justify-center">
-                      <div className="relative flex gap-2">
-                        {/* Background dots (static) */}
-                        {testimonials.map((_, index) => (
-                          <div
-                            key={index}
-                            className="h-1.5 w-1.5 rounded-full bg-white/50"
-                          />
-                        ))}
-                        
-                        {/* Sliding white indicator */}
-                        <div
-                          className="absolute h-1.5 w-8 bg-white shadow-sm rounded-full transition-all duration-700 ease-in-out"
-                          style={{
-                            transform: `translateX(${getIndicatorPosition(currentTestimonial)}px)`,
-                            left: 0,
-                            top: 0,
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </div>
+          <div className="max-w-md mx-auto w-full">
+            <p className="text-sm sm:text-base text-gray-700 font-medium mb-4 text-center">
+              First 50 creators get 30 days free.
+            </p>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:gap-4 w-full">
+              <input
+                id="name"
+                name="name"
+                type="text"
+                placeholder="Your name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                autoComplete="name"
+                maxLength={100}
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 sm:py-3.5 text-base sm:text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none bg-white transition-all duration-200"
+              />
+              <input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="your@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoComplete="email"
+                maxLength={254}
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 sm:py-3.5 text-base sm:text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none bg-white transition-all duration-200"
+              />
+              <input
+                id="channel_url"
+                name="channel_url"
+                type="text"
+                placeholder="youtube.com/@yourchannel"
+                value={channelUrl}
+                onChange={(e) => setChannelUrl(e.target.value)}
+                required
+                autoComplete="url"
+                maxLength={2048}
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 sm:py-3.5 text-base sm:text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none bg-white transition-all duration-200"
+              />
+
+              {error && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-700 text-center">{error}</p>
                 </div>
-              </div>
-            </div>
+              )}
 
-            {/* Vertical Divider - Desktop Only */}
-            <div className="hidden md:block w-px bg-gray-200"></div>
-
-            {/* Right Side - Clean White Form Panel (50%) */}
-            <div className="w-full md:w-1/2 bg-white text-gray-900 p-6 sm:p-8 md:p-12 lg:p-16 flex flex-col justify-center min-h-0">
-              <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:gap-4 max-w-lg mx-auto md:mx-0 md:max-w-md w-full">
-                {/* Email Field */}
-                <div>
-                  <input
-                    id="email"
-                    type="email"
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    autoComplete="email"
-                    maxLength={254}
-                    pattern="[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*"
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 sm:py-3.5 text-base sm:text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none bg-white transition-all duration-200"
-                  />
-                </div>
-
-                {/* Name Field */}
-                <div>
-                  <input
-                    id="name"
-                    name="name"
-                    type="text"
-                    placeholder="Your name (optional)"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    autoComplete="name"
-                    maxLength={100}
-                    pattern="[a-zA-Z\s'.-]{2,100}"
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 sm:py-3.5 text-base sm:text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none bg-white transition-all duration-200"
-                  />
-                </div>
-
-                {/* Content Category Dropdown */}
-                <div>
-                  <select
-                    id="category"
-                    name="category"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 sm:py-3.5 text-base sm:text-sm text-gray-900 bg-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none transition-all duration-200 appearance-none cursor-pointer"
-                  >
-                    <option value="">Content Category (optional)</option>
-                    <option value="Tech">Tech</option>
-                    <option value="Education">Education</option>
-                    <option value="Commentary">Commentary</option>
-                    <option value="Documentary">Documentary</option>
-                    <option value="Finance">Finance</option>
-                    <option value="Gaming">Gaming</option>
-                    <option value="Lifestyle">Lifestyle</option>
-                    <option value="Others">Others</option>
-                  </select>
-                </div>
-
-                {/* Biggest Pain Point Textarea */}
-                <div>
-                  <textarea
-                    id="biggestPain"
-                    name="biggestPain"
-                    rows={2}
-                    value={biggestPain}
-                    onChange={(e) => setBiggestPain(e.target.value)}
-                    maxLength={500}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 sm:py-3.5 text-base sm:text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none resize-none bg-white transition-all duration-200"
-                    placeholder="Biggest Pain Point (optional)"
-                  />
-                </div>
-
-                {/* Source Field */}
-                <div>
-                  <input
-                    id="source"
-                    name="source"
-                    type="text"
-                    placeholder="How did you hear about us? (optional)"
-                    value={source}
-                    onChange={(e) => setSource(e.target.value)}
-                    maxLength={100}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 sm:py-3.5 text-base sm:text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none bg-white transition-all duration-200"
-                  />
-                </div>
-
-                {/* Error Message */}
-                {error && (
-                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-sm text-red-700 text-center">{error}</p>
-                  </div>
-                )}
-
-                {/* CTA Button - Creator-Friendly Gradient */}
-                <button
-                  type="submit"
-                  disabled={pending}
-                    className="w-full bg-gradient-to-r from-orange-500 via-red-500 to-red-600 hover:from-orange-400 hover:via-red-400 hover:to-red-500 text-white rounded-lg py-3.5 sm:py-3 font-semibold text-base sm:text-sm shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:from-orange-500 disabled:hover:via-red-500 disabled:hover:to-red-600 mt-1 touch-manipulation"
-                >
-                  {pending ? "Joining..." : "Join the Beta"}
-                </button>
-
-                {/* Login Link */}
-                
-          </form>
-            </div>
+              <button
+                type="submit"
+                disabled={pending}
+                className="w-full bg-gradient-to-r from-orange-500 via-red-500 to-red-600 hover:from-orange-400 hover:via-red-400 hover:to-red-500 text-white rounded-lg py-3.5 sm:py-3 font-semibold text-base sm:text-sm shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:from-orange-500 disabled:hover:via-red-500 disabled:hover:to-red-600 mt-1 touch-manipulation"
+              >
+                {pending ? "Joining..." : "Join Early Access — Get 30 Days Free"}
+              </button>
+            </form>
           </div>
         )}
 
-          {/* Microcopy - Hide when form expanded */}
-          {!isExpanded && (
-            <p className="mt-6 sm:mt-8 text-xs sm:text-sm text-gray-500 animate-in fade-in duration-500 delay-300 px-4">
-              No spam. One email when beta is ready.
-            </p>
-          )}
+        <p className="mt-6 sm:mt-8 text-xs sm:text-sm text-gray-500 animate-in fade-in duration-500 delay-300 px-4">
+          No spam. You&apos;ll hear from us personally.
+        </p>
       </div>
 
-      {/* Demo Modal Overlay */}
       {showDemo && (
-        <div 
+        <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
@@ -658,49 +277,36 @@ export default function MarketingPage() {
           }}
         >
           <div className="relative w-full h-full max-w-7xl max-h-[90vh] m-4 flex flex-col bg-white rounded-xl overflow-hidden shadow-2xl">
-            {/* Close Button */}
             <div className="flex justify-between items-center p-4 bg-gray-50 border-b border-gray-200">
-              <h2 className="text-xl font-semibold text-gray-900">
-                🎬 Interactive Demo
-              </h2>
+              <h2 className="text-xl font-semibold text-gray-900">🎬 Interactive Demo</h2>
               <button
+                type="button"
                 onClick={() => setShowDemo(false)}
                 className="text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-full p-2 transition-all duration-200"
                 aria-label="Close demo"
               >
-                <svg 
-                  className="w-6 h-6" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                >
-                  <path 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    strokeWidth={2} 
-                    d="M6 18L18 6M6 6l12 12" 
-                  />
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
-            
-            {/* Iframe Container */}
+
             <div className="flex-1 overflow-hidden">
               <iframe
                 src="https://app.usehexus.com/embed/7cea5536-8fc5-43ab-9db5-1391a172df9f"
-                frameBorder="0"
+                title="ClueFrames demo"
+                frameBorder={0}
                 allowFullScreen
                 className="w-full h-full"
-              ></iframe>
+              />
             </div>
           </div>
         </div>
       )}
 
-        {/* Footer */}
-        <footer className="absolute bottom-0 left-0 right-0 text-center py-4 sm:py-6 md:py-8 text-xs sm:text-sm text-gray-400 px-4">
-          <p>ClueFrames © 2025 — Built for creators.</p>
-        </footer>
+      <footer className="absolute bottom-0 left-0 right-0 text-center py-4 sm:py-6 md:py-8 text-xs sm:text-sm text-gray-400 px-4">
+        <p>ClueFrames © 2026 — Built for creators.</p>
+      </footer>
     </main>
   );
 }

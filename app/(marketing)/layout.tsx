@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "ClueFrames — Join the Reddit Beta Waitlist",
+  title: "ClueFrames — Early Access for Creators",
   description:
     "Cut pre-production time by 70–90%. AI-powered research, scripting, and storyboarding for YouTube creators. Pre-production in minutes, not days.",
 };

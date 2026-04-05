@@ -166,7 +166,7 @@ export default function MarketingPage() {
         </div>
 
         <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 leading-tight tracking-tight animate-in fade-in duration-500 delay-100">
-          Your next YouTube video —{" "}
+          Your next YouTube video {" "}
           <br />
           <span className="bg-gradient-to-r from-orange-500 via-red-500 to-red-600 bg-clip-text text-transparent">
             researched, scripted, and storyboarded
@@ -176,8 +176,8 @@ export default function MarketingPage() {
         </h1>
 
         <p className="text-sm sm:text-base md:text-lg text-gray-600 mb-6 sm:mb-8 max-w-xl mx-auto leading-relaxed animate-in fade-in duration-500 delay-200 px-2">
-          ClueFrames learns your exact voice and style. Then handles your entire pre-production — Tier-1
-          research, script in your tone, storyboard with runtime — automatically.
+          ClueFrames learns your exact voice and style. Then handles your entire pre-production Tier-1
+          research, script in your tone, storyboard with runtime automatically.
         </p>
 
         <div className="mb-4 flex justify-center gap-3">
